@@ -108,10 +108,10 @@ Recall,0.0010,0.0129,0.9461,0.0005,1.0000
 F1 Score,0.0019,0.0254,0.7404,0.0010,0.7175
 ```
 
-4. `DMP_summary.csv`: Performance for PDS.
+4. `PID_summary.csv`: Performance for PDS.
 ```
 Runtime (s),Iterations,Kendall Tau,Top-K Overlap,Normalized MSE,Normalized MAE
 3.8806 ± 0.0144,88.00 ± 0.00,0.8471 ± 0.0007,0.7663 ± 0.0045,0.0035 ± 0.0002,0.0436 ± 0.0011
 ```
 
-The content of summaries of  `MC-5`, `MC-10`, `DMP(No_Cavity)` and `RAPID` are similar in format of `DMP_summary.csv`.
+The content of summaries of  `MC-5`, `MC-10` and `RAPID` are similar in format of `PID_summary.csv`.

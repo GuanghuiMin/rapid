@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import math
 
 
-def pds_prob(G, beta, gamma, initial_infected_nodes, tol=0.001):
+def pid_prob(G, beta, gamma, initial_infected_nodes, tol=0.001):
     N = G.number_of_nodes()
     status = np.zeros((N, 3))
 
@@ -103,7 +103,7 @@ def plot_sir_trends(results, G, theoretical_curve=None):
     plt.show()
 
 
-def test_pds_prob():
+def test_pid_prob():
     G = nx.barabasi_albert_graph(1000, 2)
     G = G.to_directed()
 
@@ -113,7 +113,7 @@ def test_pds_prob():
     tol = 1e-3
     l = 2
 
-    results = pds_prob(G, beta, gamma, initial_infected_nodes, tol)
+    results = pid_prob(G, beta, gamma, initial_infected_nodes, tol)
 
     for result in results:
         print(f"Iteration {result['iteration']}:")
@@ -132,4 +132,4 @@ def test_pds_prob():
 
 
 if __name__ == '__main__':
-    test_pds_prob()
+    test_pid_prob()

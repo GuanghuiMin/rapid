@@ -12,8 +12,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import rcParams
 
-# 全局 dtype 定义
-DTYPE = np.float16
+DTYPE = np.float32
 
 rcParams['font.family'] = 'sans-serif'
 rcParams['font.sans-serif'] = ['Times New Roman']
@@ -22,9 +21,8 @@ from scipy import sparse
 from scipy.stats import kendalltau
 from networks import generate_graph, load_real_data
 from simulations.mc import run_monte_carlo_simulations
-from simulations.pds import pds_prob
+from simulations.pid import pid_prob
 from simulations.rapid import rapid_prob
-from simulations.dmp import dmp_prob
 from eval import calculate_top_k_overlap
 from utils import save_args_to_csv, calculate_centralities_approx, file_title_mapping
 from sklearn.metrics import precision_score, recall_score, f1_score
@@ -174,7 +172,7 @@ def plot_threshold_curves_with_mc_horizontal_band(mc_frac, pds, dmp, lp, N, out,
     plt.fill_between(t, [mc_lo] * ths, [mc_hi] * ths, alpha=0.3,
                      label=f"MC-50 2.5%-97.5%: [{mc_lo:.3f},{mc_hi:.3f}]")
     plt.plot(t, [mc_mean] * ths, 'k-', lw=4, label=f"MC-50 mean={mc_mean:.3f}")
-    if pds is not None: plt.plot(t, curve(pds), 'b-', lw=3, label="DMP(No Cavity)")
+    if pds is not None: plt.plot(t, curve(pds), 'b-', lw=3, label="PID")
     if dmp is not None: plt.plot(t, curve(dmp), 'r--', lw=3, label="DMP")
     if lp is not None: plt.plot(t, curve(lp), 'g-.', lw=3, label="rapid")
     plt.axvline(x=float(args.threshold), ls='--', label=f"thr={args.threshold:.2f}")
@@ -276,8 +274,7 @@ def main(args):
         gc.collect()
 
     methods = {
-        "DMP(No Cavity)": pds_prob,
-        "DMP": dmp_prob,
+        "PID": pid_prob,
         "RAPID": rapid_prob
     }
     method_final_states = {}
