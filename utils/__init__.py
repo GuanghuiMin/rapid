@@ -13,14 +13,11 @@ from scipy.sparse.linalg import eigs
 
 file_title_mapping=dataset_mapping = {
     "soc-sign-bitcoinalpha.csv.gz": "Bitcoin-Alpha",
-    "soc-sign-bitcoinotc.csv.gz": "Bitcoin-OTC",
-    "p2p-Gnutella08.txt.gz": "p2p-Gnutella",
-    "p2p-Gnutella31.txt.gz": "p2p-Gnutella",
     "soc-Epinions1.txt.gz": "soc-Epinions",
-    "soc-Slashdot0902.txt.gz": "soc-Slashdot",
     "email-Enron.txt.gz": "email-Enron",
     "email-EuAll.txt.gz": "email-EuAll",
-    "soc-pokec-relationships.txt.gz": "soc-Pokec"
+    "soc-pokec-relationships.txt.gz": "soc-Pokec",
+    "hiv-Trans.tsv":"hiv-Trans"
 }
 
 def save_args_to_csv(args, output_dir):

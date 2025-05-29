@@ -362,7 +362,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Run SIR sims with MC-5/10/50, DMP, RAPID and centralities"
+        description="Run SIR sims with MC-5/10/50, PID, RAPID and centralities"
     )
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument("--graph_type", type=str, default="")
@@ -378,7 +378,7 @@ if __name__ == "__main__":
     parser.add_argument("--omega", type=float, default=1.3)
     parser.add_argument("--p", type=int, default=20)
     parser.add_argument("--data_dir", type=str, default="./data")
-    parser.add_argument("--file_name", type=str, default="soc-sign-bitcoinalpha.csv.gz")
-    parser.add_argument("--output_dir", type=str, default="./output_0428")
+    parser.add_argument("--file_name", type=str, default="hiv-Trans.tsv")
+    parser.add_argument("--output_dir", type=str, default="./output")
     args = parser.parse_args()
     main(args)

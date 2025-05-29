@@ -2,9 +2,9 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import heapq
-from .dmp import dmp_prob
 
-def global_preheat_steps(S, I, R, in_neighbors, beta, gamma, steps=10):
+
+def global_preheat_steps(S, I, R, in_neighbors, beta, gamma, steps=20):
     N = len(S)
     for _ in range(steps):
         S_new = np.copy(S)
@@ -33,13 +33,7 @@ def global_preheat_steps(S, I, R, in_neighbors, beta, gamma, steps=10):
 
 def rapid_prob(
         G, beta, gamma, initial_infected_nodes, tol=0.001,
-        preheat_steps=20, preheat_method='global'):
-    """
-    preheat_method:
-        'dmp' → 用 DMP 预热 (default)
-        'global' → 用原 global_preheat_steps
-        None → 不预热
-    """
+        preheat_steps=20):
     N = G.number_of_nodes()
     S = np.ones(N)
     I = np.zeros(N)
@@ -50,19 +44,8 @@ def rapid_prob(
 
     in_neighbors = {v: list(G.predecessors(v)) for v in G.nodes()}
     out_neighbors = {v: list(G.successors(v)) for v in G.nodes()}
-
-    if preheat_steps > 0 and preheat_method == 'dmp':
-        # DMP 预热
-        dmp_results = dmp_prob(G, beta, gamma, initial_infected_nodes, tol=1e-3, max_steps=preheat_steps)
-        last_result = dmp_results[-1]
-        for node in G.nodes():
-            S[node] = last_result['susceptible'][node]
-            I[node] = last_result['infected'][node]
-            R[node] = last_result['recovered'][node]
-    elif preheat_steps > 0 and preheat_method == 'global':
-        # 原全局预热
+    if preheat_steps > 0:
         global_preheat_steps(S, I, R, in_neighbors, beta, gamma, steps=preheat_steps)
-    # 如果 preheat_method=None 或 preheat_steps<=0，则不做预热
 
     residuals = {v: 0.0 for v in G.nodes()}
     for u in G.nodes():
@@ -93,46 +76,97 @@ def rapid_prob(
     })
 
     while heap:
-        t += 1
-        while heap:
-            neg_residual, v = heapq.heappop(heap)
-            in_heap[v] = False
-            residual_val = -neg_residual
-            if residual_val <= tol:
-                continue
+        # print(len(heap))
+        neg_residual, v = heapq.heappop(heap)
+        in_heap[v] = False
+        residual_val = -neg_residual
+        if residual_val <= tol:
+            continue
 
-            S_prev = S[v]
-            I_prev = I[v]
-            R_prev = R[v]
+        S_prev = S[v]
+        I_prev = I[v]
+        R_prev = R[v]
 
-            neighbor_I = I[in_neighbors[v]]
+        neighbor_I = I[in_neighbors[v]]
 
-            prod_term = np.prod(1.0 - beta * neighbor_I)
+        prod_term = np.prod(1.0 - beta * neighbor_I)
 
-            s_new = S_prev * prod_term
-            i_new = (S_prev - s_new) + I_prev * (1 - gamma)
-            r_new = R_prev + I_prev * gamma
+        S_temp = S_prev
+        I_temp = I_prev
+        R_temp = R_prev
 
-            if i_new > tol:
-                S[v] = s_new
-                I[v] = i_new
-                R[v] = r_new
-                delta_i = (I[v] - I_prev)
+        s_new = S_temp * prod_term
+        i_new = (S_temp - s_new) + I_temp * (1 - gamma)
+        r_new = R_temp + I_temp * gamma
+        S_temp, I_temp, R_temp = s_new, i_new, r_new
 
-                for nbr in out_neighbors[v]:
-                    old_val = residuals[nbr]
-                    residuals[nbr] += beta * delta_i
-                    if residuals[nbr] > tol and (residuals[nbr] > old_val):
-                        push_node(nbr)
-                residuals[v] = 0.0
-            else:
-                residuals[v] = 0.0
+        S_new = S_temp
+        I_new = I_temp
+        R_new = R_temp
 
-        iteration_results.append({
-            'iteration': t,
-            'susceptible': {node: S[node] for node in G.nodes()},
-            'infected': {node: I[node] for node in G.nodes()},
-            'recovered': {node: R[node] for node in G.nodes()}
-        })
+        if I_new > tol:
+            s = S[v]
+            S[v] = S_new
+            I[v] = I_new
+            R[v] = R_new
+            # delta_i = I[v]
+            # delta_i = abs(I[v] - I_prev)
+            delta_i = (I[v] - I_prev)
+
+            for nbr in out_neighbors[v]:
+                old_val = residuals[nbr]
+                residuals[nbr] += beta * delta_i
+                if residuals[nbr] > tol and (residuals[nbr] > old_val):
+                    push_node(nbr)
+            residuals[v] = 0.0
+        else:
+            residuals[v] = 0.0
+
+    iteration_results.append({
+        'iteration': t,
+        'susceptible': {node: S[node] for node in G.nodes()},
+        'infected': {node: I[node] for node in G.nodes()},
+        'recovered': {node: R[node] for node in G.nodes()}
+    })
 
     return iteration_results
+
+
+def plot_sir_trends(results, G):
+    iterations = [result['iteration'] for result in results]
+    S_counts = [sum(result['susceptible'].values()) for result in results]
+    I_counts = [sum(result['infected'].values()) for result in results]
+    R_counts = [sum(result['recovered'].values()) for result in results]
+    plt.figure(figsize=(10, 6))
+    plt.plot(iterations, S_counts, label='Susceptible (S)', color='blue')
+    plt.plot(iterations, I_counts, label='Infected (I)', color='red')
+    plt.plot(iterations, R_counts, label='Recovered (R)', color='green')
+    plt.xlabel('Iterations')
+    plt.ylabel('Number of individuals (Expected)')
+    plt.title('SIR Model: Expected Number of Individuals in Each State')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+def test_conditional_probability_iteration_estimation():
+    G = nx.barabasi_albert_graph(100, 2).to_directed()
+    beta = 0.03
+    gamma = 0.01
+    initial_infected_nodes = [0, 1]
+    tol = 0.001
+
+    results = rapid_prob(
+        G, beta, gamma, initial_infected_nodes, tol,
+        preheat_steps=0)
+    for result in results:
+        print(f"Iteration {result['iteration']}:")
+        print(f"  Susceptible: {result['susceptible']}")
+        print(f"  Infected: {result['infected']}")
+        print(f"  Recovered: {result['recovered']}\n")
+
+    plot_sir_trends(results, G)
+
+
+if __name__ == '__main__':
+    test_conditional_probability_iteration_estimation()
