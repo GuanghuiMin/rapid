@@ -115,3 +115,13 @@ Runtime (s),Iterations,Kendall Tau,Top-K Overlap,Normalized MSE,Normalized MAE
 ```
 
 The content of summaries of  `MC-5`, `MC-10` and `RAPID` are similar in format of `PID_summary.csv`.
+
+---
+If you find this Repo useful, please cite our work.
+```
+@inproceedings{minscaling,
+  title={Scaling Epidemic Inference on Contact Networks: Theory and Algorithms},
+  author={Min, Guanghui and He, Yinhan and Chen, Chen},
+  booktitle={The Thirty-ninth Annual Conference on Neural Information Processing Systems}
+}
+```
